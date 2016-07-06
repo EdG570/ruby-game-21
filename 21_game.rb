@@ -1,6 +1,7 @@
 require 'pry'
 
-RANKS = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'].freeze
+RANKS = ['A', '2', '3', '4', '5', '6',
+         '7', '8', '9', '10', 'J', 'Q', 'K'].freeze
 SUITS = ['s', 'c', 'h', 'd'].freeze
 deck = []
 
@@ -15,7 +16,7 @@ end
 def build_deck(ranks, suits, deck)
   ranks.map do |rank|
     suits.each do |suit|
-      deck.push({"rank": rank, "suit": suit})
+      deck.push({ "rank" => rank, "suit" => suit })
     end
   end
 end
@@ -73,7 +74,7 @@ def display_dealer_hand(hand)
 end
 
 def eval_hand(hand, total)
-  if hand.length == 2 && total == 21 
+  if hand.length == 2 && total == 21
     prompt("Congratulations, you won with 21!")
   elsif total > 21
     separate
@@ -87,19 +88,18 @@ def eval_hand(hand, total)
 end
 
 def eval_dealer_hand(hand, total, deck)
-  if hand.length == 2 && total == 21 
+  separate
+  if hand.length == 2 && total == 21
     prompt("*** The dealer won with 21! ***")
   elsif total > 21
-    separate
-    prompt("*** The dealer busted! You win! ***") 
-    separate
-    separate
+    prompt("*** The dealer busted! You win! ***")
   elsif total < 17
     prompt "The dealer hits..."
-    deck = deal_extra_cards(hand, deck)
+    deal_extra_cards(hand, deck)
   elsif total >= 17 && total <= 21
     prompt "The dealer stands with a total of: #{total}"
   end
+  separate
   total
 end
 
@@ -111,19 +111,25 @@ def check_for_ace(hand, total)
 end
 
 def decide_winner(player_total, dealer_total)
+  separate
   if player_total > dealer_total
-    separate
     prompt "*** Congratulations, you win! ***"
-    separate
   elsif dealer_total == player_total
-    separate
     prompt "*** It's a tie! ***"
-    separate
   else
-    separate
     prompt "*** The dealer wins. ***"
-    separate
   end
+  separate
+end
+
+def hit_or_stand?(choice, cards, deck)
+  if choice == 's'
+    prompt "You decided to stand."
+    prompt "Your total is: #{player_total}."
+  else
+    cards = deal_extra_cards(cards, deck)
+  end
+  cards
 end
 
 system "clear"
@@ -138,8 +144,6 @@ loop do
   play_again = ''
   loop do
     break if deck.empty?
-    prompt "Type (r) when you are ready to play."
-    player_rdy = gets.chomp.downcase
     system "clear"
     player_cards = deal_cards(deck)
     dealer_cards = deal_cards(deck)
@@ -152,12 +156,11 @@ loop do
     separate
 
     loop do
-      prompt "Do you want to: h) hit or s) stay"
+      prompt "Do you want to: h) hit or s) stand"
       player_decision = gets.chomp.downcase
 
       system "clear"
-      player_cards = deal_extra_cards(player_cards, deck) if player_decision == 'h'
-      prompt "You decided to stand with a total of: #{player_total}." if player_decision == 's'
+      hit_or_stand(player_decision, player_cards, deck)
       break if player_decision == 's'
       display_player_hand(player_cards)
       player_total = total_card_value(player_cards)
@@ -177,7 +180,7 @@ loop do
       dealer_total = eval_dealer_hand(dealer_cards, total_card_value(dealer_cards), deck)
       break if dealer_total >= 17
     end
-      
+
     if player_total <= 21 && dealer_total <= 21
       separate
       decide_winner(player_total, dealer_total)
@@ -187,7 +190,7 @@ loop do
     prompt "Do you want to play again? (y or n)"
     play_again = gets.chomp.downcase
 
-    break if play_again == 'n' 
+    break if play_again == 'n'
   end
   break if play_again == 'n'
 end
