@@ -37,15 +37,12 @@ def total_card_value(hand_array)
     when 'K', 'Q', 'J'
       hand_total += 10
     when 'A'
-      if hand_total <= 21
-        hand_total += 11 
-      else
-        hand_total += 1
-      end
+      hand_total += 11
     else
       hand_total += card[:rank].to_i
     end
   end
+  hand_total = check_for_ace(hand_array, hand_total)
   hand_total
 end
 
@@ -79,8 +76,9 @@ def eval_hand(hand, total)
   if hand.length == 2 && total == 21 
     prompt("Congratulations, you won with 21!")
   elsif total > 21
-    total = check_for_ace(hand, total)
-    prompt("Your hand is over 21. You busted! The dealer wins.") if total > 21
+    separate
+    prompt("Your hand is over 21. You busted! The dealer wins.")
+    separate
   else
     prompt(" ")
     prompt("Your current hand total is: #{total}")
@@ -92,8 +90,10 @@ def eval_dealer_hand(hand, total, deck)
   if hand.length == 2 && total == 21 
     prompt("*** The dealer won with 21! ***")
   elsif total > 21
-    total = check_for_ace(hand, total)
-    prompt("*** The dealer busted! You win! ***") if total > 21
+    separate
+    prompt("*** The dealer busted! You win! ***") 
+    separate
+    separate
   elsif total < 17
     prompt "The dealer hits..."
     deck = deal_extra_cards(hand, deck)
@@ -105,7 +105,7 @@ end
 
 def check_for_ace(hand, total)
   hand.each do |card|
-    total -= 10 if card[:rank] == 'A'
+    total -= 10 if card[:rank] == 'A' && total > 21
   end
   total
 end
@@ -140,6 +140,7 @@ loop do
     break if deck.empty?
     prompt "Type (r) when you are ready to play."
     player_rdy = gets.chomp.downcase
+    system "clear"
     player_cards = deal_cards(deck)
     dealer_cards = deal_cards(deck)
     separate
@@ -154,9 +155,9 @@ loop do
       prompt "Do you want to: h) hit or s) stay"
       player_decision = gets.chomp.downcase
 
-      system = "clear"
+      system "clear"
       player_cards = deal_extra_cards(player_cards, deck) if player_decision == 'h'
-      prompt "You decided to stand." if player_decision == 's'
+      prompt "You decided to stand with a total of: #{player_total}." if player_decision == 's'
       break if player_decision == 's'
       display_player_hand(player_cards)
       player_total = total_card_value(player_cards)
